@@ -117,3 +117,11 @@ img {
     }
 }
 
+.disabled {
+    cursor: default;
+    background-color: #b3b3b3;
+
+}
+.disabled:hover {
+    background-color: #b3b3b3;
+}

@@ -144,3 +144,8 @@ const options = {
 
 
 new Slider(options);
+
+// if (!config.infinity && this.currentSlide === (config.autoStop - config.itemsToSlide)) {
+//     e.target.classList.add('disabled');
+//     if(this.currentSlide !=== this.slides.length)
+// }

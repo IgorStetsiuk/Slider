@@ -24,15 +24,14 @@ class Slider {
 
         };
 
-        return Object.assign({
-        }, defaultSettings, options);
+        return Object.assign({}, defaultSettings, options);
 
 
     }
 
     init() {
         const config = this.config;
-        config.autoStop = this.slides.length - config.itemsToSlide;
+        config.autoStop = this.slides.length - config.itemsPerPage;
 
         this.renderSlidesWrappers(this.slides);
 
@@ -50,9 +49,11 @@ class Slider {
 
     }
 
-    prev() {
+    prev(e) {
         const config = this.config;
         const howManySlides = config.itemsToSlide;
+
+
 
         if (this.currentSlide === this.slides.length - config.itemsPerPage && config.infinity) {
             this.currentSlide = 0;
@@ -65,9 +66,10 @@ class Slider {
     }
 
 
-    next() {
+    next(e) {
         const config = this.config;
         const howManySlides = config.itemsToSlide;
+
 
         if (this.currentSlide === this.slides.length - config.itemsPerPage && config.infinity) {
             this.currentSlide = 0;
@@ -135,7 +137,7 @@ class Slider {
         let index = 0;
 
         while ((bulletsAmount--) > 0) {
-            const elemOptions = {element: 'a', className: ['slide-bullet', 'fade'], attr: ['data-item', index++]};
+            const elemOptions = {elem: 'a', className: ['slide-bullet', 'fade'], attr: ['data-item', index++]};
             sliderControls.appendChild(this.createElement(elemOptions));
         }
 
