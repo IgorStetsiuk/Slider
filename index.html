@@ -7,50 +7,49 @@
 </head>
 <body>
 
-
-<div id="slider">
-    <div class="slides-wrap">
+<div class="slider-container">
+    <div id="slider">
         <div class="slide">
-            <img src="./img/img.1.jpg" alt="">
+            <img src="imgs/img1.jpg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img2.jpg" alt="">
+            <img src="imgs/img2.jpg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img3.jpg" alt="">
+            <img src="imgs/img3.jpg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img4.jpg" alt="">
+            <img src="imgs/img4.jpg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img5.jpeg" alt="">
+            <img src="imgs/img5.jpeg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img6.jpeg" alt="">
+            <img src="imgs/img6.jpeg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img7.jpeg" alt="">
+            <img src="imgs/img7.jpeg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img8.jpeg" alt="">
+            <img src="imgs/img8.jpeg" alt="img">
         </div>
         <div class="slide">
-            <img src="./img/img9.jpeg" alt="">
+            <img src="imgs/img9.jpeg" alt="img">
         </div>
     </div>
-    <!--<a href="#" class="previous">&#10094;</a>-->
-    <!--<a href="#" class="next">&#10095;</a>-->
-
 </div>
 
-
-<!--<nav class="slider-controls">
-    <a class="slide-bullet fade"></a>
-    <a class="slide-bullet fade"></a>
-    <a class="slide-bullet fade"></a>
-    <a class="slide-bullet fade"></a>
-</nav>-->
-
 </body>
-<script src="./js/slider.js"></script>
+<script src="js/slider.js"></script>
+<script>
+    const options = {
+        arrows: true,
+        bullets: true,
+        itemsPerPage: 4,
+        itemsToSlide: 1,
+        autoPlay: true
+    };
+
+    new Slider(options);
+</script>
 </html>

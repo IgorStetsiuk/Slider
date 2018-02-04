@@ -1,24 +1,12 @@
-/*
-Implement slider using js with options:
-
-number of slides per page
-show/hide bulets
-show/hide arrows
-different transitions
-number of slides to transition
-continiousTransition\
-
-*/
-
-
 class Slider {
 
     constructor(options) {
         this.slider = document.getElementById('slider');
-        this.slides = Array.prototype.slice.call(this.slider.getElementsByClassName('slide'));
+        this.sliderWidth = this.slider.offsetWidth;
+        this.slides = Array.prototype.slice.call(this.slider.children);
         this.config = Slider.globalConfig(options);
         this.config.slidesLenth = this.slides.length;
-
+        this.currentSlide = Math.max(0, Math.min(0, this.slides.length - this.config.itemsPerPage));
         this.init();
     }
 
@@ -26,133 +14,175 @@ class Slider {
 
         const defaultSettings = {
             itemsPerPage: 1,
+            itemsToSlide: 1,
             bullets: false,
-            arrows: false,
-            transition: '0',
-            slidesToTransition: 0,
-            continuousTransition: false,
+            arrows: true,
+            infinity: false,
+            transition: 'ease-out',
+            duration: 1500,
+            autoPlay: false
+
         };
 
-        return Object.assign({}, defaultSettings, options);
+        return Object.assign({
+        }, defaultSettings, options);
 
 
     }
 
     init() {
         const config = this.config;
+        config.autoStop = this.slides.length - config.itemsToSlide;
 
+        this.renderSlidesWrappers(this.slides);
+
+        if (config.autoPlay) {
+            setInterval(this.autoSwitch.bind(this), config.duration);
+            config.bullets = false;
+            config.arrows = false;
+        }
 
         (config.bullets && this.renderBullets());
         (config.arrows && this.renderArrows());
-        (config.itemsPerPage && this.makeActiveSlides());
+
+        this.slideToCurrent();
+
 
     }
 
-    makeActiveSlides(array = this.slides) {
+    prev() {
         const config = this.config;
-        if (array.length === 1) {
-            config.currentVisibleSlides = this.slides.slice();
+        const howManySlides = config.itemsToSlide;
+
+        if (this.currentSlide === this.slides.length - config.itemsPerPage && config.infinity) {
+            this.currentSlide = 0;
+        }
+        else {
+            this.currentSlide = Math.max(this.currentSlide - howManySlides, 0);
         }
 
-        // this.wrapActiveSlides(array);
-        array.slice(0, config.itemsPerPage).map(item => item.classList.add('visible'));
+        this.slideToCurrent();
     }
 
 
-    addArrowsListeners(prevEl, nextEl) {
-        // this.previous(prevEl);
-        this.next(nextEl);
-    }
+    next() {
+        const config = this.config;
+        const howManySlides = config.itemsToSlide;
 
-    addBulletsListeners(bullets) {
-        Array.from(bullets.children).forEach(item=>{
-            item.addEventListener('click' ,()=>[
-                this.goTo(item.dataset.item)
-            ])
-        })
-    }
+        if (this.currentSlide === this.slides.length - config.itemsPerPage && config.infinity) {
+            this.currentSlide = 0;
+        }
+        else {
+            this.currentSlide = Math.min(this.currentSlide + howManySlides, this.slides.length - config.itemsPerPage)
 
-    goTo(index){
-
-    }
-
-    next(el) {
-        el.addEventListener('click', () => {
-            this.getVisibleSlides();
-        });
-    }
-
-// todo change logic
-    getVisibleSlides() {
-        let config = this.config;
-        let count = config.itemsPerPage;
-        const lastItem = this.slides.length - 1;
-
-
-        const lastVisibleItem = Array.from(this.slider.querySelectorAll('.visible')).pop();
-        const lastVisibleItemIndex = this.slides.indexOf(lastVisibleItem);
-        const allSlides = this.slides.map(item => {
-            item.classList.remove('visible');
-            return item;
-        });
-
-        let nextBatch;
-
-        if ((lastItem !== lastVisibleItemIndex)) {
-            nextBatch = allSlides.slice(lastVisibleItemIndex + 1, lastVisibleItemIndex + 1 + count);
-
-        } else {
-            nextBatch = this.slides.slice();
         }
 
-        this.makeActiveSlides(nextBatch);
+        this.slideToCurrent();
+
+    }
+
+    slideToCurrent() {
+        const config = this.config;
+        config.movingWith = this.currentSlide * (this.sliderWidth / config.itemsPerPage);
+
+        this.sliderFrame.style.transform = `translate3d(-${config.movingWith}px, 0, 0)`;
 
 
     }
 
+    autoSwitch() {
+        const config = this.config;
+
+        const howManySlides = config.itemsToSlide;
+        this.currentSlide = Math.min(this.currentSlide + howManySlides, this.slides.length - config.itemsPerPage);
+        this.slideToCurrent();
+
+        if (this.currentSlide === config.autoStop) {
+            this.currentSlide = 0;
+            config.movingWith = 0;
+            this.slideToCurrent();
+
+        }
+
+    }
+
+    moveToSetItems(index) {
+
+        const beforeChange = this.currentSlide;
+        const config = this.config;
+        this.currentSlide = Math.min(Math.max(+index * config.itemsPerPage, 0), this.slides.length - config.itemsPerPage);
+        if (beforeChange !== this.currentSlide) {
+            this.slideToCurrent();
+        }
+    }
 
     renderArrows() {
-        const previousArrow = this.createElement('a', ['previous'], '&#10094;');
-        const nextArrow = this.createElement('a', ['next'], '&#10095;');
-        this.slider.appendChild(previousArrow);
-        this.slider.appendChild(nextArrow);
-        this.addArrowsListeners(previousArrow, nextArrow);
+        const previousArrow = this.createElement({elem: 'a', className: ['previous'], content: '&#10094'});
+        const nextArrow = this.createElement({elem: 'a', className: ['next'], content: '&#10095;'});
+        const container = this.slider.parentElement;
+        container.appendChild(previousArrow);
+        container.appendChild(nextArrow);
+
+        previousArrow.addEventListener('click', this.prev.bind(this));
+        nextArrow.addEventListener('click', this.next.bind(this));
+
     }
 
     renderBullets() {
         const config = this.config;
-        const sliderControls = this.createElement('nav', ['slider-controls']);
-        let bulletsAmount = Math.floor(config.slidesLenth / config.itemsPerPage);
-        let index = 1;
+        const sliderControls = this.createElement({elem: 'div', className: ['slider-controls']});
+        let bulletsAmount = Math.round(config.slidesLenth / config.itemsPerPage);
+        let index = 0;
+
         while ((bulletsAmount--) > 0) {
-            sliderControls.appendChild(this.createElement('a', ['slide-bullet', 'fade'], '', ['data-item',index++]))
+            const elemOptions = {element: 'a', className: ['slide-bullet', 'fade'], attr: ['data-item', index++]};
+            sliderControls.appendChild(this.createElement(elemOptions));
         }
 
-        this.slider.appendChild(sliderControls);
+        Array.from(sliderControls.children).forEach(bullet => {
+            bullet.addEventListener('click', this.moveToSetItems.bind(this, bullet.dataset.item));
+        });
 
-        this.addBulletsListeners(sliderControls);
+        this.slider.parentElement.appendChild(sliderControls);
+
+
     }
 
-    createElement(elem, className = [], content = '', attr = []) {
-        const element = document.createElement(elem);
-        (className && element.classList.add(...className));
-        console.log(attr)
-        attr.length && element.setAttribute(...attr);
+    renderSlidesWrappers(data) {
+        const config = this.config;
+
+        const elementOptions = {
+            elem: 'div', className: ['slides-frame'], styles: {
+                display: "flex",
+                width: `${(this.sliderWidth / config.itemsPerPage) * this.slides.length}px`,
+                transition: `all ${config.duration}ms ${config.transition}`
+            }
+        };
+        this.sliderFrame = this.createElement(elementOptions);
+
+        Array.from(data).forEach(item => {
+            const elementContainer = document.createElement('div');
+            elementContainer.style.width = `${100 / this.slides.length}%`;
+            elementContainer.classList.add('slide-wrap');
+            elementContainer.appendChild(item);
+            this.sliderFrame.appendChild(elementContainer)
+        });
+        this.slider.appendChild(this.sliderFrame);
+    }
+
+    createElement({elem, className = [], content = '', styles = {}, attr = []}) {
+
+        const node = document.createElement(elem);
+        (className && node.classList.add(...className));
+        Object.keys(styles).forEach(prop => {
+            node.style[prop] = styles[prop];
+        });
+        attr.length && node.setAttribute(...attr);
         if (content) {
-            element.innerHTML = content
+            node.innerHTML = content
         }
 
-        return element;
+        return node;
     }
-
 
 }
-
-const options = {
-    arrows: true,
-    itemsPerPage: 2,
-    bullets: true
-};
-
-
-new Slider(options);
